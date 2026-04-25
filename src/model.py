@@ -7,7 +7,6 @@ Usage example:
     y_train = np.array([[1]])
     network.train((x_train, y_train), 0.01, 100, batch_size=12)
 """
-import os
 import numpy as np
 from src.loss import CCE, accuracy
 from src.layer import Layer
@@ -165,3 +164,15 @@ class Network:
                 # calculate stats
                 # loss: float = cce.cost(y_pred, y_b)
                 # acc: float = accuracy(y_pred, y_b)
+
+    def predict(self, x: np.ndarray) -> np.ndarray:
+        """Predict labels using the network with the provided data.
+
+        Args:
+            x: The input data.
+
+        Returns:
+            The predicted labels.
+        """
+        pred = self.__forward_feed(x)
+        return pred
