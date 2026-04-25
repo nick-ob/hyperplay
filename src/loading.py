@@ -44,6 +44,8 @@ def load_data(data: str) -> tuple[np.ndarray, np.ndarray]:
     # use y field as label
     y = data['y'] if 'y' in names else data[names[-1]]
     y = y.reshape(-1, 1)
+    # add opposite output value (as 2 probabilities)
+    y = np.hstack([y, 1 - y])
 
     # shape (batches, 2) % (batches, 1)
     return (x, y)
