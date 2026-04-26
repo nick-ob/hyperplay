@@ -29,8 +29,8 @@ def create_plot(data: tuple[np.ndarray, np.ndarray], network: Network) -> Figure
     y_min, y_max = x[:, 1].min() - 0.5, x[:, 1].max() + 0.5
 
     # create a grid over plotting are
-    x_range: np.ndarray = np.arange(x_min, x_max, step=0.25)
-    y_range: np.ndarray = np.arange(y_min, y_max, step=0.25)
+    x_range: np.ndarray = np.arange(x_min, x_max, step=0.1)
+    y_range: np.ndarray = np.arange(y_min, y_max, step=0.1)
     x_coords, y_coords = np.meshgrid(x_range, y_range)
 
     # convert the grid to input shaped data
