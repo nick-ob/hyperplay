@@ -8,7 +8,7 @@ Usage example:
     network.train((x_train, y_train), 0.01, 100, batch_size=12)
 """
 import numpy as np
-from src.loss import CCE, accuracy
+from src.loss import CCE
 from src.layer import Layer
 from src.activations import ReLu, Softmax
 
