@@ -141,18 +141,16 @@ class Network:
         if batch_size is None:
             batch_size = x.shape[0]
 
-        total_batches: int = x.shape[0] // batch_size
-
         cce = CCE()
 
         # training loop
-        for e in range(1, epochs + 1):
+        for _ in range(1, epochs + 1):
             # shuffle input and output
             x_shuffled, y_shuffled = self.__shuffle_data(x, y)
 
             # go through all batches for the data
             i: int = 0
-            for idx, j in enumerate(range(batch_size, x.shape[0] + batch_size, batch_size)):
+            for _, j in enumerate(range(batch_size, x.shape[0] + batch_size, batch_size)):
                 # get batch & prepare variables for the next
                 x_b, y_b = x_shuffled[i:j], y_shuffled[i:j]
                 i = j
@@ -160,10 +158,6 @@ class Network:
                 # forward feed and backpropagate through the network
                 y_pred = self.__forward_feed(x_b)
                 self.__backpropagate(cce.delta(y_pred, y_b), learning_rate)
-
-                # calculate stats
-                # loss: float = cce.cost(y_pred, y_b)
-                # acc: float = accuracy(y_pred, y_b)
 
     def predict(self, x: np.ndarray) -> np.ndarray:
         """Predict labels using the network with the provided data.
