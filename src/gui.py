@@ -12,6 +12,9 @@ import queue
 
 import customtkinter as ctk
 import numpy as np
+import seaborn as sns
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
 from src.model import Network
 from src.loading import load_data
@@ -41,18 +44,67 @@ class GUI(ctk.CTk):
         self.__training_thread: Optional[threading.Thread] = None
         self.__stop_event = threading.Event()
 
+        # initialise widget layout and the animation plot
         self.__setup_layout()
         self.__setup_matplotlib()
 
     def __setup_layout(self) -> None:
         """Create and lay out GUI widgets.
         """
-        pass
+        # create main container
+        self.__root_frame = ctk.CTkFrame(self)
+        self.__root_frame.pack(fill="both", expand=True)
+
+        # create start button
+        self.__start_button = ctk.CTkButton(
+            self.__root_frame,
+            text="Start",
+            command=self.__start_training,
+        )
+        self.__start_button.pack(side="top")
+
+        # create plot area
+        self.__plot_frame = ctk.CTkFrame(self.__root_frame)
+        self.__plot_frame.pack(fill="both", expand=True, padx=12, pady=12)
 
     def __setup_matplotlib(self) -> None:
         """Initialise the matplotlib/seaborn figure and embed it into the GUI.
         """
-        pass
+        # apply seaborn styling for the plot
+        sns.set_theme(style="whitegrid")
+
+        # create matplotlib figure and axis
+        self.__fig = Figure(figsize=(9, 6), dpi=100)
+        self.__fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
+        self.__ax = self.__fig.add_subplot()
+        self.__ax.set_axis_off()
+        self.__ax.set_position([0, 0, 1, 1])
+
+        # create default decision boundary
+        z = np.zeros(self.__grid_xx.shape)
+        self.__contour = self.__ax.contourf(
+            self.__grid_xx,
+            self.__grid_yy,
+            z,
+            cmap="Set2",
+            alpha=0.6,
+        )
+
+        # plot training data with labels
+        labels = np.argmax(self.__y_train, axis=1)
+        self.__scatter = self.__ax.scatter(
+            self.__x_train[:, 0],
+            self.__x_train[:, 1],
+            c=labels,
+            cmap="Set2",
+            edgecolors="0.5",
+        )
+
+        # embed matplotlib canvas into tkinter
+        self.__canvas = FigureCanvasTkAgg(self.__fig, master=self.__plot_frame)
+        self.__canvas.draw()
+        self.__canvas_widget = self.__canvas.get_tk_widget()
+        self.__canvas_widget.pack(fill="both", expand=True)
 
     def __create_decision_grid(
         self,
