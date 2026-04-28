@@ -109,6 +109,7 @@ class GUI(ctk.CTk):
 
         # create default decision boundary
         z = np.zeros(self.__grid_xx.shape)
+
         self.__contour = self.__ax.contourf(
             self.__grid_xx,
             self.__grid_yy,
@@ -117,7 +118,6 @@ class GUI(ctk.CTk):
             alpha=0.6,
             zorder=1
         )
-
         # plot training data with labels
         labels = np.argmax(self.__y_train, axis=1)
         self.__scatter = self.__ax.scatter(
@@ -128,6 +128,7 @@ class GUI(ctk.CTk):
             edgecolors="0.5",
             zorder=2
         )
+        self.__update_contour(z)
 
         # embed matplotlib canvas into tkinter
         self.__canvas = FigureCanvasTkAgg(self.__fig, master=self.__plot_frame)
@@ -188,7 +189,29 @@ class GUI(ctk.CTk):
 
     def __reset_network(self) -> None:
         """Placeholder reset handler (to be implemented)."""
-        return
+        # request training stop
+        self.__stop_event.set()
+
+        # wait briefly for training thread to exit
+        if self.__training_thread is not None and self.__training_thread.is_alive():
+            self.__training_thread.join(timeout=0.5)
+
+        # reinitialise network
+        self.__network: Network = Network(2, 50, 50, 2)
+
+        # clear any pending snapshots
+        try:
+            while True:
+                self.__snapshot_queue.get_nowait()
+        except queue.Empty:
+            pass
+
+        # reset plot to initial state
+        z = np.zeros(self.__grid_xx.shape)
+        self.__update_contour(z)
+        self.__canvas.draw_idle()
+
+        self.__train_button.configure(state="normal")
 
     def __training_worker(self, stop_event: threading.Event) -> None:
         """Run training in the background and publish visualisation snapshots.
