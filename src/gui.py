@@ -8,6 +8,7 @@ import threading
 import queue
 
 import customtkinter as ctk
+ctk.set_default_color_theme("src/theme/marsh.json")
 import numpy as np
 import seaborn as sns
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -30,6 +31,7 @@ class GUI(ctk.CTk):
         """
         super().__init__()
         self.title("HyperPlay")
+        self.iconbitmap("src/theme/icon.ico")
         self.__network: Network = Network(2, 50, 50, 2)
 
         # load default data and create decision grid
