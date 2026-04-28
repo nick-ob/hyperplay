@@ -94,6 +94,7 @@ class GUI(ctk.CTk):
             z,
             cmap="Set2",
             alpha=0.6,
+            zorder=1
         )
 
         # plot training data with labels
@@ -104,6 +105,7 @@ class GUI(ctk.CTk):
             c=labels,
             cmap="Set2",
             edgecolors="0.5",
+            zorder=2
         )
 
         # embed matplotlib canvas into tkinter
@@ -233,7 +235,19 @@ class GUI(ctk.CTk):
         Args:
             grid: Grid of predicted class probabilities reshaped to mesh size.
         """
-        pass
+        # remove old contour before drawing a new one
+        self.__contour.remove()
+
+        self.__contour = self.__ax.contourf(
+            self.__grid_xx,
+            self.__grid_yy,
+            grid,
+            levels=[0.0, 0.5, 1.0],
+            cmap="Set2",
+            alpha=0.6,
+            zorder=1
+        )
+        self.__scatter.set_zorder(2)
 
     def __on_close(self) -> None:
         """Handle window close by stopping background work cleanly."""
