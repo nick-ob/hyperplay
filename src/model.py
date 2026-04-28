@@ -114,9 +114,14 @@ class Network:
 
     def train(
             self, data: tuple[np.ndarray, np.ndarray],
-            learning_rate: float, epochs: int, batch_size: int | None = None
+            learning_rate: float, epochs: int, batch_size: int | None = None,
+            snapshot_interval: int = 10,
+            on_snapshot: "callable[[int, int, 'Network'], None] | None" = None,
+            should_stop: "callable[[], bool] | None" = None
     ) -> None:
         """Train the network on provided training data.
+
+        Emits snapshots for live visualisation.
 
         Args:
             data: The input and labels for the training data.
@@ -124,6 +129,9 @@ class Network:
             epochs: The amount of training epochs.
             batch_size: The size of the batches used to train. Defaults to None.
             If None, then the full dataset is used.
+            snapshot_interval: int = 10,
+            on_snapshot: "callable[[int, int, 'Network'], None] | None" = None,
+            should_stop: "callable[[], bool] | None" = None,
         """
         x, y = data
 
