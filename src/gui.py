@@ -44,6 +44,12 @@ class GUI(ctk.CTk):
         self.__training_thread: Optional[threading.Thread] = None
         self.__stop_event = threading.Event()
 
+        # training settings
+        self.__learning_rate: float = 0.01
+        self.__epochs: int = 100
+        self.__batch_size: int | None = None
+        self.__snapshot_interval: int = 10
+
         # initialise widget layout and the animation plot
         self.__setup_layout()
         self.__setup_matplotlib()
@@ -142,7 +148,20 @@ class GUI(ctk.CTk):
         This disables the start button, clears any previous stop signal,
         and launches the training worker.
         """
-        pass
+        # prevent duplicate training threads
+        if self.__training_thread is not None and self.__training_thread.is_alive():
+            return
+
+        self.__stop_event.clear()
+        self.__start_button.configure(state="disabled")
+
+        # start a new thread
+        self.__training_thread = threading.Thread(
+            target=self.__training_worker,
+            args=(self.__stop_event,),
+            daemon=True,
+        )
+        self.__training_thread.start()
 
     def __training_worker(self, stop_event: threading.Event) -> None:
         """Run training in the background and publish visualisation snapshots.
@@ -150,7 +169,29 @@ class GUI(ctk.CTk):
         Args:
             stop_event: Signal to request a graceful stop for training.
         """
-        pass
+        def on_snapshot(epoch: int, step: int, network: Network) -> None:
+            # predict on the fixed grid and reshape into mesh form
+            pred = network.predict(self.__grid_xy)
+            grid = pred[:, 0].reshape(self.__grid_xx.shape)
+
+            snapshot = TrainingSnapshot(epoch, step, grid)
+            self.__publish_snapshot(snapshot)
+
+        def should_stop() -> bool:
+            return stop_event.is_set()
+
+        self.__network.train(
+            (self.__x_train, self.__y_train),
+            self.__learning_rate,
+            self.__epochs,
+            batch_size=self.__batch_size,
+            snapshot_interval=self.__snapshot_interval,
+            on_snapshot=on_snapshot,
+            should_stop=should_stop,
+        )
+
+        # re-enable start button when training is done
+        self.__start_button.configure(state="normal")
 
     def __publish_snapshot(self, snapshot: TrainingSnapshot) -> None:
         """Publish the latest snapshot to the UI thread.
