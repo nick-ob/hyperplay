@@ -15,6 +15,7 @@ import numpy as np
 import seaborn as sns
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
 
 from src.model import Network
 from src.loading import load_data
@@ -78,6 +79,7 @@ class GUI(ctk.CTk):
         """
         # apply seaborn styling for the plot
         sns.set_theme(style="whitegrid")
+        self.__cmap = plt.get_cmap("Set2", 2)
 
         # create matplotlib figure and axis
         self.__fig = Figure(figsize=(9, 6), dpi=100)
@@ -92,7 +94,7 @@ class GUI(ctk.CTk):
             self.__grid_xx,
             self.__grid_yy,
             z,
-            cmap="Set2",
+            cmap=self.__cmap,
             alpha=0.6,
             zorder=1
         )
@@ -103,7 +105,7 @@ class GUI(ctk.CTk):
             self.__x_train[:, 0],
             self.__x_train[:, 1],
             c=labels,
-            cmap="Set2",
+            cmap=self.__cmap,
             edgecolors="0.5",
             zorder=2
         )
@@ -238,12 +240,16 @@ class GUI(ctk.CTk):
         # remove old contour before drawing a new one
         self.__contour.remove()
 
+        # flip grid values (neede for colors to align)
+        grid = (grid < 0.5).astype(int)
+
+        # update countour
         self.__contour = self.__ax.contourf(
             self.__grid_xx,
             self.__grid_yy,
             grid,
             levels=[0.0, 0.5, 1.0],
-            cmap="Set2",
+            cmap=self.__cmap,
             alpha=0.6,
             zorder=1
         )
