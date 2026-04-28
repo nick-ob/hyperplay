@@ -142,6 +142,8 @@ class Network:
             raise ValueError("epochs must be a positive integer")
         if batch_size is not None and (type(batch_size) is not int or batch_size <= 0):
             raise ValueError("batch_size must be a positive integer")
+        if type(snapshot_interval) is not int or snapshot_interval <= 0:
+            raise ValueError("snapshot_interval must be a positive integer")
         if x.shape[0] != y.shape[0]:
             raise ValueError("x and y must have the same number of batches")
 
@@ -152,13 +154,13 @@ class Network:
         cce = CCE()
 
         # training loop
-        for _ in range(1, epochs + 1):
+        for epoch in range(1, epochs + 1):
             # shuffle input and output
             x_shuffled, y_shuffled = self.__shuffle_data(x, y)
 
             # go through all batches for the data
             i: int = 0
-            for _, j in enumerate(range(batch_size, x.shape[0] + batch_size, batch_size)):
+            for step, j in enumerate(range(batch_size, x.shape[0] + batch_size, batch_size)):
                 # get batch & prepare variables for the next
                 x_b, y_b = x_shuffled[i:j], y_shuffled[i:j]
                 i = j
@@ -166,6 +168,14 @@ class Network:
                 # forward feed and backpropagate through the network
                 y_pred = self.__forward_feed(x_b)
                 self.__backpropagate(cce.delta(y_pred, y_b), learning_rate)
+
+                # emit snapshot for live visualisation
+                if on_snapshot is not None and step % snapshot_interval == 0:
+                    on_snapshot(epoch, step, self)
+
+                # stop training if requested
+                if should_stop is not None and should_stop():
+                    return
 
     def predict(self, x: np.ndarray) -> np.ndarray:
         """Predict labels using the network with the provided data.
