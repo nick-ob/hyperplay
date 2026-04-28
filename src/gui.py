@@ -492,6 +492,12 @@ class GUI(ctk.CTk):
                 self.__x_train
             )
 
+        self.__cost_value.configure(text="-")
+        self.__accuracy_value.configure(text="-")
+
+        self.__epoch_progress.set(0)
+        self.__batch_progress.set(0)
+
         self.__network = Network(2, *self.__hidden_layers, 2)
 
         self.__ax.set_xlim(self.__grid_xx.min(), self.__grid_xx.max())
