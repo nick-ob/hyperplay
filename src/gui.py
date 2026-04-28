@@ -6,6 +6,7 @@ Usage example:
 """
 import threading
 import queue
+import os
 
 import customtkinter as ctk
 ctk.set_default_color_theme("src/theme/marsh.json")
@@ -138,6 +139,14 @@ class GUI(ctk.CTk):
         self.__datasets_label = ctk.CTkLabel(self.__datasets_section, text="Datasets")
         self.__datasets_label.pack(anchor="w", padx=8, pady=(8, 4))
 
+        self.__dataset_var = ctk.StringVar(value=self.__data_name)
+        self.__dataset_menu = ctk.CTkOptionMenu(
+            self.__datasets_section,
+            values=self.__list_datasets(),
+            variable=self.__dataset_var,
+        )
+        self.__dataset_menu.pack(fill="x", padx=8, pady=(0, 8))
+
         self.__architecture_section = ctk.CTkFrame(self.__left_panel)
         self.__architecture_section.pack(fill="x", pady=(0, 12))
         self.__architecture_label = ctk.CTkLabel(self.__architecture_section, text="Architecture")
@@ -147,6 +156,13 @@ class GUI(ctk.CTk):
         self.__hypers_section.pack(fill="x")
         self.__hypers_label = ctk.CTkLabel(self.__hypers_section, text="Hypers")
         self.__hypers_label.pack(anchor="w", padx=8, pady=(8, 4))
+
+        self.__apply_button = ctk.CTkButton(
+            self.__left_panel,
+            text="Apply",
+            command=self.__apply_settings,
+        )
+        self.__apply_button.pack(fill="x", padx=12, pady=(12, 0))
 
     def __setup_matplotlib(self) -> None:
         """Initialise the matplotlib/seaborn figure and embed it into the GUI.
@@ -235,6 +251,7 @@ class GUI(ctk.CTk):
 
         self.__stop_event.clear()
         self.__train_button.configure(state="disabled")
+        self.__apply_button.configure(state="disabled")
         self.__epoch_progress.set(0)
         self.__batch_progress.set(0)
 
@@ -276,6 +293,7 @@ class GUI(ctk.CTk):
         self.__accuracy_value.configure(text="-")
 
         self.__train_button.configure(state="normal")
+        self.__apply_button.configure(state="normal")
 
     def __training_worker(self, stop_event: threading.Event) -> None:
         """Run training in the background and publish visualisation snapshots.
@@ -340,6 +358,7 @@ class GUI(ctk.CTk):
 
         # re-enable start button when training is done
         self.__train_button.configure(state="normal")
+        self.__apply_button.configure(state="normal")
 
     def __publish_snapshot(self, snapshot: TrainingSnapshot) -> None:
         """Publish the latest snapshot to the UI thread.
@@ -401,6 +420,11 @@ class GUI(ctk.CTk):
         self.__scatter.set_zorder(2)
 
     def __update_training_metrics(self, snapshot: TrainingSnapshot) -> None:
+        """Update progress bars & training statistics.
+
+        Args:
+            snpashot: The current snapshot of which metrics should be shown.
+        """
         epoch_progress = 0.0
         if snapshot.total_epochs > 0:
             epoch_progress = min(snapshot.epoch / snapshot.total_epochs, 1.0)
@@ -413,6 +437,52 @@ class GUI(ctk.CTk):
         self.__batch_progress.set(batch_progress)
         self.__cost_value.configure(text=f"{snapshot.cost:.4f}")
         self.__accuracy_value.configure(text=f"{snapshot.accuracy:.2f}%")
+
+    def __list_datasets(self) -> list[str]:
+        """Get the available .csv datasets in the data directory.
+
+        Returns:
+            list[str]: The available filenames.
+        """
+        data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
+        if not os.path.isdir(data_dir):
+            return []
+
+        files = [f for f in os.listdir(data_dir) if f.endswith(".csv")]
+        files.sort()
+        return files
+
+    def __apply_settings(self) -> None:
+        """Apply user defined settings for the network.
+        """
+        if self.__training_thread is not None and self.__training_thread.is_alive():
+            return
+
+        selected = self.__dataset_var.get()
+        if selected:
+            self.__data_name = selected
+            self.__x_train, self.__y_train = load_data(self.__data_name)
+            self.__grid_xx, self.__grid_yy, self.__grid_xy = self.__create_decision_grid(
+                self.__x_train
+            )
+
+            self.__ax.set_xlim(self.__grid_xx.min(), self.__grid_xx.max())
+            self.__ax.set_ylim(self.__grid_yy.min(), self.__grid_yy.max())
+
+            labels = np.argmax(self.__y_train, axis=1)
+            self.__scatter.remove()
+            self.__scatter = self.__ax.scatter(
+                self.__x_train[:, 0],
+                self.__x_train[:, 1],
+                c=labels,
+                cmap=self.__cmap,
+                edgecolors="0.5",
+                zorder=2,
+            )
+
+            z = np.zeros(self.__grid_xx.shape)
+            self.__update_contour(z)
+            self.__canvas.draw_idle()
 
     def __on_close(self) -> None:
         """Handle window close by stopping background work cleanly."""
