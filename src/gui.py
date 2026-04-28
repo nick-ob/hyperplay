@@ -15,6 +15,7 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
 from src.model import Network
+from src.loss import CCE, accuracy
 from src.loading import load_data
 from src.types import TrainingSnapshot
 
@@ -47,6 +48,8 @@ class GUI(ctk.CTk):
         self.__epochs: int = 100
         self.__batch_size: int | None = 32
         self.__snapshot_interval: int = 5
+
+        self.__loss = CCE()
 
         # initialise widget layout and the animation plot
         self.__setup_layout()
@@ -230,6 +233,8 @@ class GUI(ctk.CTk):
 
         self.__stop_event.clear()
         self.__train_button.configure(state="disabled")
+        self.__epoch_progress.set(0)
+        self.__batch_progress.set(0)
 
         # start a new thread
         self.__training_thread = threading.Thread(
@@ -263,6 +268,11 @@ class GUI(ctk.CTk):
         self.__update_contour(z)
         self.__canvas.draw_idle()
 
+        self.__epoch_progress.set(0)
+        self.__batch_progress.set(0)
+        self.__cost_value.configure(text="-")
+        self.__accuracy_value.configure(text="-")
+
         self.__train_button.configure(state="normal")
 
     def __training_worker(self, stop_event: threading.Event) -> None:
@@ -271,24 +281,58 @@ class GUI(ctk.CTk):
         Args:
             stop_event: Signal to request a graceful stop for training.
         """
-        def on_snapshot(epoch: int, step: int, network: Network) -> None:
+        def on_snapshot(
+            epoch: int,
+            step: int,
+            network: Network,
+            y_pred: np.ndarray,
+            y_batch: np.ndarray,
+            total_steps: int,
+        ) -> None:
             # predict on the fixed grid and reshape into mesh form
             pred = network.predict(self.__grid_xy)
             grid = pred[:, 0].reshape(self.__grid_xx.shape)
 
-            snapshot = TrainingSnapshot(epoch, step, grid)
+            cost_value = self.__loss.cost(y_pred, y_batch)
+            acc_value = accuracy(y_pred, y_batch)
+
+            snapshot = TrainingSnapshot(
+                epoch,
+                step,
+                self.__epochs,
+                total_steps,
+                cost_value,
+                acc_value,
+                grid,
+            )
             self.__publish_snapshot(snapshot)
 
         def should_stop() -> bool:
             return stop_event.is_set()
 
+        x, y = self.__x_train, self.__y_train
+
+        if self.__batch_size is None:
+            batch_size = x.shape[0]
+        else:
+            batch_size = self.__batch_size
+
+        total_steps = int(np.ceil(x.shape[0] / batch_size))
+
         self.__network.train(
-            (self.__x_train, self.__y_train),
+            (x, y),
             self.__learning_rate,
             self.__epochs,
-            batch_size=self.__batch_size,
+            batch_size=batch_size,
             snapshot_interval=self.__snapshot_interval,
-            on_snapshot=on_snapshot,
+            on_snapshot=lambda epoch, step, net: on_snapshot(
+                epoch,
+                step,
+                net,
+                net.predict(x),
+                y,
+                total_steps,
+            ),
             should_stop=should_stop,
         )
 
@@ -324,6 +368,7 @@ class GUI(ctk.CTk):
 
         if snapshot is not None:
             self.__update_contour(snapshot.grid)
+            self.__update_training_metrics(snapshot)
             self.__canvas.draw_idle()
 
         # schedule next tick
@@ -352,6 +397,20 @@ class GUI(ctk.CTk):
             zorder=1
         )
         self.__scatter.set_zorder(2)
+
+    def __update_training_metrics(self, snapshot: TrainingSnapshot) -> None:
+        epoch_progress = 0.0
+        if snapshot.total_epochs > 0:
+            epoch_progress = min(snapshot.epoch / snapshot.total_epochs, 1.0)
+
+        batch_progress = 0.0
+        if snapshot.total_steps > 0:
+            batch_progress = min((snapshot.step + 1) / snapshot.total_steps, 1.0)
+
+        self.__epoch_progress.set(epoch_progress)
+        self.__batch_progress.set(batch_progress)
+        self.__cost_value.configure(text=f"{snapshot.cost:.4f}")
+        self.__accuracy_value.configure(text=f"{snapshot.accuracy:.2f}%")
 
     def __on_close(self) -> None:
         """Handle window close by stopping background work cleanly."""
