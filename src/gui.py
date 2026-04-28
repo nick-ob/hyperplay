@@ -7,6 +7,7 @@ Usage example:
 import threading
 import queue
 import os
+import re
 
 import customtkinter as ctk
 ctk.set_default_color_theme("src/theme/marsh.json")
@@ -33,7 +34,8 @@ class GUI(ctk.CTk):
         super().__init__()
         self.title("HyperPlay")
         self.iconbitmap("src/theme/icon.ico")
-        self.__network: Network = Network(2, 50, 50, 2)
+        self.__hidden_layers: list[int] = [10, 10]
+        self.__network: Network = Network(2, *self.__hidden_layers, 2)
 
         # load default data and create decision grid
         self.__data_name: str = "circles.csv"
@@ -152,6 +154,28 @@ class GUI(ctk.CTk):
         self.__architecture_label = ctk.CTkLabel(self.__architecture_section, text="Architecture")
         self.__architecture_label.pack(anchor="w", padx=8, pady=(8, 4))
 
+        self.__arch_entry_frame = ctk.CTkFrame(self.__architecture_section)
+        self.__arch_entry_frame.pack(fill="x", padx=8, pady=(0, 8))
+
+        self.__arch_entry_scroll = ctk.CTkScrollbar(
+            self.__arch_entry_frame,
+            orientation="horizontal",
+        )
+        self.__arch_entry_scroll.pack(side="bottom", fill="x")
+
+        self.__arch_entry = ctk.CTkEntry(
+            self.__arch_entry_frame,
+        )
+        self.__arch_entry.pack(side="top", fill="x")
+        self.__arch_entry.configure(xscrollcommand=self.__arch_entry_scroll.set)
+        self.__arch_entry_scroll.configure(command=self.__arch_entry.xview)
+        self.__arch_entry.insert(0, self.__format_arch_text())
+
+        self.__arch_entry.configure(
+            validate="key",
+            validatecommand=(self.register(self.__validate_arch_input), "%P"),
+        )
+
         self.__hypers_section = ctk.CTkFrame(self.__left_panel)
         self.__hypers_section.pack(fill="x")
         self.__hypers_label = ctk.CTkLabel(self.__hypers_section, text="Hypers")
@@ -203,7 +227,7 @@ class GUI(ctk.CTk):
         )
         self.__update_contour(z)
 
-        # embed matplotlib canvas into tkinter
+        # embed matplotlib canvas into customtkinter
         self.__canvas = FigureCanvasTkAgg(self.__fig, master=self.__plot_frame)
         self.__canvas.draw()
         self.__canvas_widget = self.__canvas.get_tk_widget()
@@ -273,7 +297,7 @@ class GUI(ctk.CTk):
             self.__training_thread.join(timeout=0.5)
 
         # reinitialise network
-        self.__network: Network = Network(2, 50, 50, 2)
+        self.__network: Network = Network(2, *self.__hidden_layers, 2)
 
         # clear any pending snapshots
         try:
@@ -458,6 +482,8 @@ class GUI(ctk.CTk):
         if self.__training_thread is not None and self.__training_thread.is_alive():
             return
 
+        self.__hidden_layers = self.__parse_arch_text(self.__arch_entry.get())
+
         selected = self.__dataset_var.get()
         if selected:
             self.__data_name = selected
@@ -466,23 +492,84 @@ class GUI(ctk.CTk):
                 self.__x_train
             )
 
-            self.__ax.set_xlim(self.__grid_xx.min(), self.__grid_xx.max())
-            self.__ax.set_ylim(self.__grid_yy.min(), self.__grid_yy.max())
+        self.__network = Network(2, *self.__hidden_layers, 2)
 
-            labels = np.argmax(self.__y_train, axis=1)
-            self.__scatter.remove()
-            self.__scatter = self.__ax.scatter(
-                self.__x_train[:, 0],
-                self.__x_train[:, 1],
-                c=labels,
-                cmap=self.__cmap,
-                edgecolors="0.5",
-                zorder=2,
-            )
+        self.__ax.set_xlim(self.__grid_xx.min(), self.__grid_xx.max())
+        self.__ax.set_ylim(self.__grid_yy.min(), self.__grid_yy.max())
 
-            z = np.zeros(self.__grid_xx.shape)
-            self.__update_contour(z)
-            self.__canvas.draw_idle()
+        labels = np.argmax(self.__y_train, axis=1)
+        self.__scatter.remove()
+        self.__scatter = self.__ax.scatter(
+            self.__x_train[:, 0],
+            self.__x_train[:, 1],
+            c=labels,
+            cmap=self.__cmap,
+            edgecolors="0.5",
+            zorder=2,
+        )
+
+        z = np.zeros(self.__grid_xx.shape)
+        self.__update_contour(z)
+        self.__canvas.draw_idle()
+
+    def __parse_arch_text(self, text: str) -> list[int]:
+        """Clean the input text from the architecture entry.
+
+        Args:
+            text: The text of the entry.
+
+        Returns:
+            list[int]: The node counts in a list.
+        """
+        cleaned = text.strip().strip(",")
+        if not cleaned:
+            return []
+
+        parts = [part.strip() for part in cleaned.split(",") if part.strip()]
+        nodes: list[int] = []
+        for part in parts:
+            try:
+                value = int(part)
+            except ValueError:
+                continue
+            if value > 0:
+                nodes.append(value)
+
+        return nodes
+
+    def __format_arch_text(self) -> str:
+        """Format the architecture into a nice readable format.
+        """
+        return ", ".join(str(nodes) for nodes in self.__hidden_layers)
+
+    def __validate_arch_input(self, value: str) -> bool:
+        """Make sure the input is valid.
+
+        The input goes through a set of simple checks it has to pass to be considered
+        valid.
+
+        Args:
+            value: The input.
+
+        Returns:
+            bool: Whether it is valid or not.
+        """
+        if value == "":
+            return True
+
+        if not re.fullmatch(r"\d+(?:\s*,\s*\d+)*(?:\s*,?\s*)?", value):
+            return False
+
+        if ",," in value:
+            return False
+
+        if value.startswith(","):
+            return False
+
+        if value.startswith(" "):
+            return False
+
+        return True
 
     def __on_close(self) -> None:
         """Handle window close by stopping background work cleanly."""
