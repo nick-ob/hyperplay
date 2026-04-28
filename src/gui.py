@@ -4,9 +4,6 @@ Usage example:
     gui = GUI()
     gui.mainloop()
 """
-from __future__ import annotations
-
-from typing import Optional
 import threading
 import queue
 
@@ -35,21 +32,21 @@ class GUI(ctk.CTk):
         self.__network: Network = Network(2, 50, 50, 2)
 
         # load default data and create decision grid
-        self.__data_name: str = "circles.csv"
+        self.__data_name: str = "xor.csv"
         self.__x_train, self.__y_train = load_data(self.__data_name)
         self.__grid_xx, self.__grid_yy, self.__grid_xy = self.__create_decision_grid(
             self.__x_train
         )
 
         self.__snapshot_queue: "queue.Queue[TrainingSnapshot]" = queue.Queue(maxsize=1)
-        self.__training_thread: Optional[threading.Thread] = None
+        self.__training_thread: threading.Thread | None = None
         self.__stop_event = threading.Event()
 
         # training settings
         self.__learning_rate: float = 0.01
         self.__epochs: int = 100
-        self.__batch_size: int | None = None
-        self.__snapshot_interval: int = 10
+        self.__batch_size: int | None = 32
+        self.__snapshot_interval: int = 5
 
         # initialise widget layout and the animation plot
         self.__setup_layout()
