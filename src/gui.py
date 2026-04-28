@@ -91,6 +91,58 @@ class GUI(ctk.CTk):
         self.__plot_frame = ctk.CTkFrame(self.__right_panel)
         self.__plot_frame.pack(fill="both", expand=True, padx=12, pady=12)
 
+        # right panel status area
+        self.__status_frame = ctk.CTkFrame(self.__right_panel)
+        self.__status_frame.pack(side="bottom", fill="x", padx=12, pady=(0, 12))
+
+        self.__progress_frame = ctk.CTkFrame(self.__status_frame)
+        self.__progress_frame.pack(side="left", fill="both", expand=True, padx=12, pady=12)
+
+        self.__epoch_label = ctk.CTkLabel(self.__progress_frame, text="Epoch")
+        self.__epoch_label.pack(anchor="w", padx=8, pady=(4, 2))
+        self.__epoch_progress = ctk.CTkProgressBar(self.__progress_frame)
+        self.__epoch_progress.set(0)
+        self.__epoch_progress.pack(fill="x", padx=8, pady=(0, 10))
+
+        self.__batch_label = ctk.CTkLabel(self.__progress_frame, text="Batch")
+        self.__batch_label.pack(anchor="w", padx=8, pady=(0, 2))
+        self.__batch_progress = ctk.CTkProgressBar(self.__progress_frame)
+        self.__batch_progress.set(0)
+        self.__batch_progress.pack(fill="x", padx=8, pady=(0, 4))
+
+        self.__stats_frame = ctk.CTkFrame(self.__status_frame)
+        self.__stats_frame.pack(side="right", padx=12, pady=12)
+
+        self.__cost_frame = ctk.CTkFrame(self.__stats_frame)
+        self.__cost_frame.pack(side="left", padx=8, pady=8)
+        self.__cost_label = ctk.CTkLabel(self.__cost_frame, text="Cost")
+        self.__cost_label.pack(padx=8, pady=(6, 2))
+        self.__cost_value = ctk.CTkLabel(self.__cost_frame, text="-")
+        self.__cost_value.pack(padx=8, pady=(0, 8))
+
+        self.__accuracy_frame = ctk.CTkFrame(self.__stats_frame)
+        self.__accuracy_frame.pack(side="right", padx=8, pady=8)
+        self.__accuracy_label = ctk.CTkLabel(self.__accuracy_frame, text="Accuracy")
+        self.__accuracy_label.pack(padx=8, pady=(6, 2))
+        self.__accuracy_value = ctk.CTkLabel(self.__accuracy_frame, text="-")
+        self.__accuracy_value.pack(padx=8, pady=(0, 8))
+
+        # left panel sections
+        self.__datasets_section = ctk.CTkFrame(self.__left_panel)
+        self.__datasets_section.pack(fill="x", pady=(0, 12))
+        self.__datasets_label = ctk.CTkLabel(self.__datasets_section, text="Datasets")
+        self.__datasets_label.pack(anchor="w", padx=8, pady=(8, 4))
+
+        self.__architecture_section = ctk.CTkFrame(self.__left_panel)
+        self.__architecture_section.pack(fill="x", pady=(0, 12))
+        self.__architecture_label = ctk.CTkLabel(self.__architecture_section, text="Architecture")
+        self.__architecture_label.pack(anchor="w", padx=8, pady=(8, 4))
+
+        self.__hypers_section = ctk.CTkFrame(self.__left_panel)
+        self.__hypers_section.pack(fill="x")
+        self.__hypers_label = ctk.CTkLabel(self.__hypers_section, text="Hypers")
+        self.__hypers_label.pack(anchor="w", padx=8, pady=(8, 4))
+
     def __setup_matplotlib(self) -> None:
         """Initialise the matplotlib/seaborn figure and embed it into the GUI.
         """
