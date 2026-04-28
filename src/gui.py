@@ -55,6 +55,9 @@ class GUI(ctk.CTk):
         self.__setup_layout()
         self.__setup_matplotlib()
 
+        # handle window close
+        self.protocol("WM_DELETE_WINDOW", self.__on_close)
+
     def __setup_layout(self) -> None:
         """Create and lay out GUI widgets.
         """
@@ -87,6 +90,8 @@ class GUI(ctk.CTk):
         self.__ax = self.__fig.add_subplot()
         self.__ax.set_axis_off()
         self.__ax.set_position([0, 0, 1, 1])
+        self.__ax.set_xlim(self.__grid_xx.min(), self.__grid_xx.max())
+        self.__ax.set_ylim(self.__grid_yy.min(), self.__grid_yy.max())
 
         # create default decision boundary
         z = np.zeros(self.__grid_xx.shape)
@@ -257,4 +262,11 @@ class GUI(ctk.CTk):
 
     def __on_close(self) -> None:
         """Handle window close by stopping background work cleanly."""
-        pass
+        # request training stop
+        self.__stop_event.set()
+
+        # wait briefly for training thread to exit
+        if self.__training_thread is not None and self.__training_thread.is_alive():
+            self.__training_thread.join(timeout=0.5)
+
+        self.destroy()
