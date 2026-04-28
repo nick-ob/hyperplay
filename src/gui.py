@@ -106,6 +106,9 @@ class GUI(ctk.CTk):
         self.__canvas_widget = self.__canvas.get_tk_widget()
         self.__canvas_widget.pack(fill="both", expand=True)
 
+        # start render loop
+        self.after(33, self.__render_tick)
+
     def __create_decision_grid(
         self,
         x: np.ndarray,
@@ -157,7 +160,12 @@ class GUI(ctk.CTk):
         Args:
             snapshot: The latest training state for visualization.
         """
-        pass
+        # ensure only the newest snapshot is kept
+        try:
+            self.__snapshot_queue.put_nowait(snapshot)
+        except queue.Full:
+            self.__snapshot_queue.get_nowait()
+            self.__snapshot_queue.put_nowait(snapshot)
 
     def __render_tick(self) -> None:
         """Render loop tick scheduled by Tk's event loop.
@@ -165,7 +173,18 @@ class GUI(ctk.CTk):
         This consumes the latest snapshot (if any), updates the plot artists,
         and schedules the next tick.
         """
-        pass
+        # consume latest snapshot if available
+        try:
+            snapshot = self.__snapshot_queue.get_nowait()
+        except queue.Empty:
+            snapshot = None
+
+        if snapshot is not None:
+            self.__update_contour(snapshot.grid)
+            self.__canvas.draw_idle()
+
+        # schedule next tick
+        self.after(33, self.__render_tick)
 
     def __update_contour(self, grid: np.ndarray) -> None:
         """Update the decision boundary contour using the latest grid values.
