@@ -32,7 +32,7 @@ class GUI(ctk.CTk):
         self.__network: Network = Network(2, 50, 50, 2)
 
         # load default data and create decision grid
-        self.__data_name: str = "xor.csv"
+        self.__data_name: str = "circles.csv"
         self.__x_train, self.__y_train = load_data(self.__data_name)
         self.__grid_xx, self.__grid_yy, self.__grid_xy = self.__create_decision_grid(
             self.__x_train
@@ -62,16 +62,33 @@ class GUI(ctk.CTk):
         self.__root_frame = ctk.CTkFrame(self)
         self.__root_frame.pack(fill="both", expand=True)
 
-        # create start button
-        self.__start_button = ctk.CTkButton(
-            self.__root_frame,
-            text="Start",
+        # split layout into left/right panels
+        self.__left_panel = ctk.CTkFrame(self.__root_frame, width=260)
+        self.__left_panel.pack(side="left", fill="y", padx=12, pady=12)
+
+        self.__right_panel = ctk.CTkFrame(self.__root_frame)
+        self.__right_panel.pack(side="right", fill="both", expand=True, padx=12, pady=12)
+
+        # right panel controls row
+        self.__right_controls = ctk.CTkFrame(self.__right_panel)
+        self.__right_controls.pack(side="top", fill="x")
+
+        self.__train_button = ctk.CTkButton(
+            self.__right_controls,
+            text="Train",
             command=self.__start_training,
         )
-        self.__start_button.pack(side="top")
+        self.__train_button.pack(side="right", padx=(8, 8))
+
+        self.__reset_button = ctk.CTkButton(
+            self.__right_controls,
+            text="Reset",
+            command=self.__reset_network,
+        )
+        self.__reset_button.pack(side="right")
 
         # create plot area
-        self.__plot_frame = ctk.CTkFrame(self.__root_frame)
+        self.__plot_frame = ctk.CTkFrame(self.__right_panel)
         self.__plot_frame.pack(fill="both", expand=True, padx=12, pady=12)
 
     def __setup_matplotlib(self) -> None:
@@ -159,7 +176,7 @@ class GUI(ctk.CTk):
             return
 
         self.__stop_event.clear()
-        self.__start_button.configure(state="disabled")
+        self.__train_button.configure(state="disabled")
 
         # start a new thread
         self.__training_thread = threading.Thread(
@@ -168,6 +185,10 @@ class GUI(ctk.CTk):
             daemon=True,
         )
         self.__training_thread.start()
+
+    def __reset_network(self) -> None:
+        """Placeholder reset handler (to be implemented)."""
+        return
 
     def __training_worker(self, stop_event: threading.Event) -> None:
         """Run training in the background and publish visualisation snapshots.
@@ -197,7 +218,7 @@ class GUI(ctk.CTk):
         )
 
         # re-enable start button when training is done
-        self.__start_button.configure(state="normal")
+        self.__train_button.configure(state="normal")
 
     def __publish_snapshot(self, snapshot: TrainingSnapshot) -> None:
         """Publish the latest snapshot to the UI thread.
