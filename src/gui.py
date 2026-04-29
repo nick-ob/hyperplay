@@ -373,6 +373,7 @@ class GUI(ctk.CTk):
 
         self.__train_button.configure(state="normal")
         self.__apply_button.configure(state="normal")
+        self.__train_button.configure(text="Train")
 
     def __training_worker(self, stop_event: threading.Event) -> None:
         """Run training in the background and publish visualisation snapshots.
@@ -438,6 +439,7 @@ class GUI(ctk.CTk):
         # re-enable start button when training is done
         self.__train_button.configure(state="normal")
         self.__apply_button.configure(state="normal")
+        self.__train_button.configure(text="Continue")
 
     def __publish_snapshot(self, snapshot: TrainingSnapshot) -> None:
         """Publish the latest snapshot to the UI thread.
@@ -561,6 +563,7 @@ class GUI(ctk.CTk):
         self.__batch_progress.set(0)
 
         self.__network = Network(2, *self.__hidden_layers, 2)
+        self.__train_button.configure(text="Train")
 
         self.__ax.set_xlim(self.__grid_xx.min(), self.__grid_xx.max())
         self.__ax.set_ylim(self.__grid_yy.min(), self.__grid_yy.max())
