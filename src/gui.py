@@ -127,6 +127,19 @@ class GUI(ctk.CTk):
         )
         self.__plot_frame.pack(fill="both", expand=True, padx=12, pady=12)
 
+        self.__plot_card = ctk.CTkFrame(
+            self.__plot_frame,
+            border_width=1,
+        )
+        self.__plot_card.pack(fill="both", expand=True)
+
+        self.__plot_inner = ctk.CTkFrame(
+            self.__plot_card,
+            fg_color="transparent",
+            border_width=0,
+        )
+        self.__plot_inner.pack(fill="both", expand=True, padx=10, pady=10)
+
         # right panel status area
         self.__status_frame = ctk.CTkFrame(
             self.__right_panel,
@@ -337,7 +350,7 @@ class GUI(ctk.CTk):
         self.__update_contour(z)
 
         # embed matplotlib canvas into customtkinter
-        self.__canvas = FigureCanvasTkAgg(self.__fig, master=self.__plot_frame)
+        self.__canvas = FigureCanvasTkAgg(self.__fig, master=self.__plot_inner)
         self.__canvas.draw()
         self.__canvas_widget = self.__canvas.get_tk_widget()
         self.__canvas_widget.pack(fill="both", expand=True)
