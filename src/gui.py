@@ -54,6 +54,10 @@ class GUI(ctk.CTk):
         self.__batch_size: int | None = 32
         self.__snapshot_interval: int = 5
 
+        self.__pending_learning_rate: float = self.__learning_rate
+        self.__pending_epochs: int = self.__epochs
+        self.__pending_batch_size: int | None = self.__batch_size
+
         self.__loss = CCE()
 
         # initialise widget layout and the animation plot
@@ -181,6 +185,51 @@ class GUI(ctk.CTk):
         self.__hypers_label = ctk.CTkLabel(self.__hypers_section, text="Hypers")
         self.__hypers_label.pack(anchor="w", padx=8, pady=(8, 4))
 
+        self.__lr_value = ctk.StringVar(value=f"{self.__pending_learning_rate:.4f}")
+        self.__lr_label = ctk.CTkLabel(self.__hypers_section, text="Learning rate")
+        self.__lr_label.pack(anchor="w", padx=8, pady=(4, 2))
+        self.__lr_slider = ctk.CTkSlider(
+            self.__hypers_section,
+            from_=0.0001,
+            to=1.0,
+            number_of_steps=999,
+            command=self.__on_lr_change,
+        )
+        self.__lr_slider.set(self.__pending_learning_rate)
+        self.__lr_slider.pack(fill="x", padx=8, pady=(0, 2))
+        self.__lr_value_label = ctk.CTkLabel(self.__hypers_section, textvariable=self.__lr_value)
+        self.__lr_value_label.pack(anchor="w", padx=8, pady=(0, 8))
+
+        self.__epochs_value = ctk.StringVar(value=str(self.__pending_epochs))
+        self.__epochs_label = ctk.CTkLabel(self.__hypers_section, text="Epochs")
+        self.__epochs_label.pack(anchor="w", padx=8, pady=(4, 2))
+        self.__epochs_slider = ctk.CTkSlider(
+            self.__hypers_section,
+            from_=1,
+            to=500,
+            number_of_steps=499,
+            command=self.__on_epochs_change,
+        )
+        self.__epochs_slider.set(self.__pending_epochs)
+        self.__epochs_slider.pack(fill="x", padx=8, pady=(0, 2))
+        self.__epochs_value_label = ctk.CTkLabel(self.__hypers_section, textvariable=self.__epochs_value)
+        self.__epochs_value_label.pack(anchor="w", padx=8, pady=(0, 8))
+
+        self.__batch_value = ctk.StringVar(value=str(self.__pending_batch_size))
+        self.__batch_label = ctk.CTkLabel(self.__hypers_section, text="Batch size")
+        self.__batch_label.pack(anchor="w", padx=8, pady=(4, 2))
+        self.__batch_slider = ctk.CTkSlider(
+            self.__hypers_section,
+            from_=1,
+            to=256,
+            number_of_steps=255,
+            command=self.__on_batch_change,
+        )
+        self.__batch_slider.set(self.__pending_batch_size)
+        self.__batch_slider.pack(fill="x", padx=8, pady=(0, 2))
+        self.__batch_value_label = ctk.CTkLabel(self.__hypers_section, textvariable=self.__batch_value)
+        self.__batch_value_label.pack(anchor="w", padx=8, pady=(0, 8))
+
         self.__apply_button = ctk.CTkButton(
             self.__left_panel,
             text="Apply",
@@ -200,7 +249,7 @@ class GUI(ctk.CTk):
         self.__fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
         self.__ax = self.__fig.add_subplot()
         self.__ax.set_axis_off()
-        self.__ax.set_position([0, 0, 1, 1])
+        self.__ax.set_position((0, 0, 1, 1))
         self.__ax.set_xlim(self.__grid_xx.min(), self.__grid_xx.max())
         self.__ax.set_ylim(self.__grid_yy.min(), self.__grid_yy.max())
 
@@ -484,6 +533,10 @@ class GUI(ctk.CTk):
 
         self.__hidden_layers = self.__parse_arch_text(self.__arch_entry.get())
 
+        self.__learning_rate = self.__pending_learning_rate
+        self.__epochs = self.__pending_epochs
+        self.__batch_size = self.__pending_batch_size
+
         selected = self.__dataset_var.get()
         if selected:
             self.__data_name = selected
@@ -576,6 +629,30 @@ class GUI(ctk.CTk):
             return False
 
         return True
+
+    def __on_lr_change(self, value: float) -> None:
+        """Update learning rate.
+
+        value: The learning rate to set.
+        """
+        self.__pending_learning_rate = max(0.0001, float(value))
+        self.__lr_value.set(f"{self.__pending_learning_rate:.4f}")
+
+    def __on_epochs_change(self, value: float) -> None:
+        """Update amount of epochs.
+
+        value: The epoch amount to set.
+        """
+        self.__pending_epochs = max(1, int(round(value)))
+        self.__epochs_value.set(str(self.__pending_epochs))
+
+    def __on_batch_change(self, value: float) -> None:
+        """Update the batch size.
+
+        value: The batch size to set.
+        """
+        self.__pending_batch_size = max(1, int(round(value)))
+        self.__batch_value.set(str(self.__pending_batch_size))
 
     def __on_close(self) -> None:
         """Handle window close by stopping background work cleanly."""
