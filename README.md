@@ -87,7 +87,7 @@ hyperplay/
 |   |-- activations.py        # ReLU / Softmax
 |   |-- loss.py               # CCE loss + accuracy metric
 |   |-- loading.py            # loads datasets from CSV
-|   |-- types.py              # shared types for UI
+|   |-- types.py              # shared type for UI & Network
 |   |-- theme/
 |       |-- marsh.json         # UI theme
 |       |-- icon.ico
