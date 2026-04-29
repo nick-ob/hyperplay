@@ -77,18 +77,31 @@ class GUI(ctk.CTk):
             - Right: control row, plot, progress + metrics
         """
         # create main container
-        self.__root_frame = ctk.CTkFrame(self)
+        self.__root_frame = ctk.CTkFrame(self, fg_color="transparent", border_width=0)
         self.__root_frame.pack(fill="both", expand=True)
 
         # left/right layout split
-        self.__left_panel = ctk.CTkFrame(self.__root_frame, width=260)
+        self.__left_panel = ctk.CTkFrame(
+            self.__root_frame,
+            width=260,
+            fg_color="transparent",
+            border_width=0,
+        )
         self.__left_panel.pack(side="left", fill="y", padx=12, pady=12)
 
-        self.__right_panel = ctk.CTkFrame(self.__root_frame)
+        self.__right_panel = ctk.CTkFrame(
+            self.__root_frame,
+            fg_color="transparent",
+            border_width=0,
+        )
         self.__right_panel.pack(side="right", fill="both", expand=True, padx=12, pady=12)
 
         # right panel controls row
-        self.__right_controls = ctk.CTkFrame(self.__right_panel)
+        self.__right_controls = ctk.CTkFrame(
+            self.__right_panel,
+            fg_color="transparent",
+            border_width=0,
+        )
         self.__right_controls.pack(side="top", fill="x")
 
         self.__train_button = ctk.CTkButton(
@@ -106,14 +119,26 @@ class GUI(ctk.CTk):
         self.__reset_button.pack(side="right")
 
         # plot area
-        self.__plot_frame = ctk.CTkFrame(self.__right_panel)
+        self.__plot_frame = ctk.CTkFrame(
+            self.__right_panel,
+            fg_color="transparent",
+            border_width=0,
+        )
         self.__plot_frame.pack(fill="both", expand=True, padx=12, pady=12)
 
         # right panel status area
-        self.__status_frame = ctk.CTkFrame(self.__right_panel)
+        self.__status_frame = ctk.CTkFrame(
+            self.__right_panel,
+            fg_color="transparent",
+            border_width=0,
+        )
         self.__status_frame.pack(side="bottom", fill="x", padx=12, pady=(0, 12))
 
-        self.__progress_frame = ctk.CTkFrame(self.__status_frame)
+        self.__progress_frame = ctk.CTkFrame(
+            self.__status_frame,
+            fg_color="transparent",
+            border_width=0,
+        )
         self.__progress_frame.pack(side="left", fill="both", expand=True, padx=12, pady=12)
 
         self.__epoch_label = ctk.CTkLabel(self.__progress_frame, text="Epoch")
@@ -128,17 +153,29 @@ class GUI(ctk.CTk):
         self.__batch_progress.set(0)
         self.__batch_progress.pack(fill="x", padx=8, pady=(0, 4))
 
-        self.__stats_frame = ctk.CTkFrame(self.__status_frame)
+        self.__stats_frame = ctk.CTkFrame(
+            self.__status_frame,
+            fg_color="transparent",
+            border_width=0,
+        )
         self.__stats_frame.pack(side="right", padx=12, pady=12)
 
-        self.__cost_frame = ctk.CTkFrame(self.__stats_frame)
+        self.__cost_frame = ctk.CTkFrame(
+            self.__stats_frame,
+            fg_color="transparent",
+            border_width=0,
+        )
         self.__cost_frame.pack(side="left", padx=8, pady=8)
         self.__cost_label = ctk.CTkLabel(self.__cost_frame, text="Cost")
         self.__cost_label.pack(padx=8, pady=(6, 2))
         self.__cost_value = ctk.CTkLabel(self.__cost_frame, text="-")
         self.__cost_value.pack(padx=8, pady=(0, 8))
 
-        self.__accuracy_frame = ctk.CTkFrame(self.__stats_frame)
+        self.__accuracy_frame = ctk.CTkFrame(
+            self.__stats_frame,
+            fg_color="transparent",
+            border_width=0,
+        )
         self.__accuracy_frame.pack(side="right", padx=8, pady=8)
         self.__accuracy_label = ctk.CTkLabel(self.__accuracy_frame, text="Accuracy")
         self.__accuracy_label.pack(padx=8, pady=(6, 2))
@@ -146,7 +183,11 @@ class GUI(ctk.CTk):
         self.__accuracy_value.pack(padx=8, pady=(0, 8))
 
         # left panel sections
-        self.__datasets_section = ctk.CTkFrame(self.__left_panel)
+        self.__datasets_section = ctk.CTkFrame(
+            self.__left_panel,
+            fg_color="transparent",
+            border_width=0,
+        )
         self.__datasets_section.pack(fill="x", pady=(0, 12))
         self.__datasets_label = ctk.CTkLabel(self.__datasets_section, text="Datasets")
         self.__datasets_label.pack(anchor="w", padx=8, pady=(8, 4))
@@ -159,12 +200,20 @@ class GUI(ctk.CTk):
         )
         self.__dataset_menu.pack(fill="x", padx=8, pady=(0, 8))
 
-        self.__architecture_section = ctk.CTkFrame(self.__left_panel)
+        self.__architecture_section = ctk.CTkFrame(
+            self.__left_panel,
+            fg_color="transparent",
+            border_width=0,
+        )
         self.__architecture_section.pack(fill="x", pady=(0, 12))
         self.__architecture_label = ctk.CTkLabel(self.__architecture_section, text="Architecture")
         self.__architecture_label.pack(anchor="w", padx=8, pady=(8, 4))
 
-        self.__arch_entry_frame = ctk.CTkFrame(self.__architecture_section)
+        self.__arch_entry_frame = ctk.CTkFrame(
+            self.__architecture_section,
+            fg_color="transparent",
+            border_width=0,
+        )
         self.__arch_entry_frame.pack(fill="x", padx=8, pady=(0, 8))
 
         self.__arch_entry_scroll = ctk.CTkScrollbar(
@@ -186,7 +235,11 @@ class GUI(ctk.CTk):
             validatecommand=(self.register(self.__validate_arch_input), "%P"),
         )
 
-        self.__hypers_section = ctk.CTkFrame(self.__left_panel)
+        self.__hypers_section = ctk.CTkFrame(
+            self.__left_panel,
+            fg_color="transparent",
+            border_width=0,
+        )
         self.__hypers_section.pack(fill="x")
         self.__hypers_label = ctk.CTkLabel(self.__hypers_section, text="Hypers")
         self.__hypers_label.pack(anchor="w", padx=8, pady=(8, 4))
