@@ -1,10 +1,18 @@
 # 🕹️ HyperPlay
 
-🚧 Work in Progress 🚧
-
 HyperPlay is an interactive GUI for exploring how hyperparameters affect a
 simple neural network learning on 2D toy datasets. Adjust the settings and
 watch the decision boundary update live.
+
+![HyperPlay demo](assets/demo.gif)
+
+## Why HyperPlay
+
+This project started from curiosity about how different hyperparameters affect
+the model in practice. How training unfolds is easiest to understand when you
+can see it yourself. HyperPlay turns the usual “tweak, run, inspect” loop
+into a live visual feedback loop so you can intuitively learn how learning rate,
+batch size, and different architectures actually affect the training process.
 
 ## Quick Start
 
@@ -20,18 +28,35 @@ pip install -r requirements.txt
 python main.py
 ```
 
-## What This Project Includes
+## How It Works
+
+- Left panel stages changes to dataset, architecture, and hypers.
+- Hit `Apply` to commit changes to the training setup.
+- Hit `Train` to start learning and stream live snapshots to the plot.
+- Reset reinitializes the network with the last applied settings.
+
+## Features
 
 - Live decision boundary visualisation for 2D datasets
-- Custom fully connected neural network (NumPy only)
+- Custom fully connected neural network
+(NumPy only, adapted from my [MNIST Neural Network from Scratch Project](https://github.com/nick-ob/mnist-numpy-nn)
 - Background training thread for smooth UI updates
 - Dataset loading from CSV files in `data/`
 - Extensible GUI layout for hyperparameter controls
 
+## Controls
+
+- Dataset picker for built-in CSV datasets
+- Architecture entry (comma-separated hidden layer sizes, e.g. `10, 10`)
+- Learning rate slider
+- Epochs slider
+- Batch size slider
+- Train / Reset / Apply actions
+
 ## Datasets
 
-Datasets are stored in `data/` as CSV files. Each file contains columns for the
-input features and a `y` label column.
+Datasets live in `data/` as CSV files. Each file contains columns for the input
+features and a `y` label column.
 
 Included datasets:
 
@@ -53,6 +78,8 @@ hyperplay/
 |   |-- moons.csv
 |   |-- circles.csv
 |   |-- blobs.csv
+|-- assets/
+|   |-- demo.gif
 |-- src/
 |   |-- gui.py                # GUI and training loop
 |   |-- model.py              # Network class
@@ -61,6 +88,9 @@ hyperplay/
 |   |-- loss.py               # CCE loss + accuracy metric
 |   |-- loading.py            # loads datasets from CSV
 |   |-- types.py              # shared types for UI
+|   |-- theme/
+|       |-- marsh.json         # UI theme
+|       |-- icon.ico
 ```
 
 ## Tech Stack
@@ -69,12 +99,6 @@ hyperplay/
 - **NumPy** - math
 - **CustomTkinter** - GUI
 - **Matplotlib, Seaborn** - visualisations
-
-## Status
-
-The core training + visualisation loop is implemented. The next focus is the
-hyperparameter controls (dataset picker, architecture editor, sliders) and UI
-polish.
 
 ## License
 
