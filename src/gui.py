@@ -226,8 +226,8 @@ class GUI(ctk.CTk):
             self.__arch_entry_frame,
         )
         self.__arch_entry.pack(side="top", fill="x")
-        self.__arch_entry.configure(xscrollcommand=self.__arch_entry_scroll.set)
-        self.__arch_entry_scroll.configure(command=self.__arch_entry.xview)
+        self.__arch_entry._entry.configure(xscrollcommand=self.__arch_entry_scroll.set)
+        self.__arch_entry_scroll.configure(command=self.__arch_entry._entry.xview)
         self.__arch_entry.insert(0, self.__format_arch_text())
 
         self.__arch_entry.configure(
