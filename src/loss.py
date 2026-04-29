@@ -21,7 +21,7 @@ class CCE:
             y_pred: The predicted labels.
             y_act: The actual labels.
 
-        Return:
+        Returns:
             float: The cost of the network.
         """
         # clip data to avoid any logs of 0
@@ -40,7 +40,7 @@ class CCE:
             y_pred: The predicted labels.
             y_act: The actual lables.
 
-        Return:
+        Returns:
             np.ndarray: The derviative of the loss w.r.t. the final output.
         """
         # this output averaged to stay independant of the amount of batches
@@ -53,7 +53,7 @@ def accuracy(y_pred: np.ndarray, y_act: np.ndarray) -> float:
          y_pred: The predicted labels.
          y_act: The actual labels.
 
-    Returns
+    Returns:
         float: The accuracy (in percent).
     """
     # get the indices of the maximum values

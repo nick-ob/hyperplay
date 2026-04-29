@@ -129,9 +129,9 @@ class Network:
             epochs: The amount of training epochs.
             batch_size: The size of the batches used to train. Defaults to None.
             If None, then the full dataset is used.
-            snapshot_interval: int = 10,
-            on_snapshot: "callable[[int, int, 'Network'], None] | None" = None,
-            should_stop: "callable[[], bool] | None" = None,
+            snapshot_interval: Interval (in steps) for emitting snapshots.
+            on_snapshot: Callback for live visualisation.
+            should_stop: Callback used to cancel training early.
         """
         x, y = data
 
