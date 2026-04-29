@@ -34,6 +34,7 @@ class GUI(ctk.CTk):
         """
         super().__init__()
         self.title("HyperPlay")
+        self.minsize(800, 620)
         self.iconbitmap("src/theme/icon.ico")
         self.__hidden_layers: list[int] = [10, 10]
         self.__network: Network = Network(2, *self.__hidden_layers, 2)
@@ -168,7 +169,7 @@ class GUI(ctk.CTk):
         self.__cost_frame.pack(side="left", padx=8, pady=8)
         self.__cost_label = ctk.CTkLabel(self.__cost_frame, text="Cost")
         self.__cost_label.pack(padx=8, pady=(6, 2))
-        self.__cost_value = ctk.CTkLabel(self.__cost_frame, text="-")
+        self.__cost_value = ctk.CTkLabel(self.__cost_frame, text="      -     ")
         self.__cost_value.pack(padx=8, pady=(0, 8))
 
         self.__accuracy_frame = ctk.CTkFrame(
@@ -179,7 +180,7 @@ class GUI(ctk.CTk):
         self.__accuracy_frame.pack(side="right", padx=8, pady=8)
         self.__accuracy_label = ctk.CTkLabel(self.__accuracy_frame, text="Accuracy")
         self.__accuracy_label.pack(padx=8, pady=(6, 2))
-        self.__accuracy_value = ctk.CTkLabel(self.__accuracy_frame, text="-")
+        self.__accuracy_value = ctk.CTkLabel(self.__accuracy_frame, text="      -     ")
         self.__accuracy_value.pack(padx=8, pady=(0, 8))
 
         # left panel sections
@@ -421,8 +422,8 @@ class GUI(ctk.CTk):
 
         self.__epoch_progress.set(0)
         self.__batch_progress.set(0)
-        self.__cost_value.configure(text="-")
-        self.__accuracy_value.configure(text="-")
+        self.__cost_value.configure(text="      -     ")
+        self.__accuracy_value.configure(text="      -     ")
 
         self.__train_button.configure(state="normal")
         self.__apply_button.configure(state="normal")
@@ -612,8 +613,8 @@ class GUI(ctk.CTk):
                 self.__x_train
             )
 
-        self.__cost_value.configure(text="-")
-        self.__accuracy_value.configure(text="-")
+        self.__cost_value.configure(text="      -     ")
+        self.__accuracy_value.configure(text="      -     ")
 
         self.__epoch_progress.set(0)
         self.__batch_progress.set(0)
