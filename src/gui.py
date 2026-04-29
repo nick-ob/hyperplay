@@ -107,14 +107,14 @@ class GUI(ctk.CTk):
 
         self.__train_button = ctk.CTkButton(
             self.__right_controls,
-            text="Train",
+            text="Train ▶︎",
             command=self.__start_training,
         )
         self.__train_button.pack(side="right", padx=(8, 8))
 
         self.__reset_button = ctk.CTkButton(
             self.__right_controls,
-            text="Reset",
+            text="Reset ↻",
             command=self.__reset_network,
         )
         self.__reset_button.pack(side="right")
@@ -292,7 +292,7 @@ class GUI(ctk.CTk):
 
         self.__apply_button = ctk.CTkButton(
             self.__left_panel,
-            text="Apply",
+            text="Apply ✔",
             command=self.__apply_settings,
         )
         self.__apply_button.pack(fill="x", padx=12, pady=(12, 0))
@@ -427,7 +427,7 @@ class GUI(ctk.CTk):
 
         self.__train_button.configure(state="normal")
         self.__apply_button.configure(state="normal")
-        self.__train_button.configure(text="Train")
+        self.__train_button.configure(text="Train ▶︎")
 
     def __training_worker(self, stop_event: threading.Event) -> None:
         """Run training in the background and publish visualisation snapshots.
@@ -496,7 +496,7 @@ class GUI(ctk.CTk):
         # re-enable start button when training is done
         self.__train_button.configure(state="normal")
         self.__apply_button.configure(state="normal")
-        self.__train_button.configure(text="Continue")
+        self.__train_button.configure(text="Continue ▶︎")
 
     def __publish_snapshot(self, snapshot: TrainingSnapshot) -> None:
         """Publish the latest snapshot to the UI thread.
@@ -620,7 +620,7 @@ class GUI(ctk.CTk):
         self.__batch_progress.set(0)
 
         self.__network = Network(2, *self.__hidden_layers, 2)
-        self.__train_button.configure(text="Train")
+        self.__train_button.configure(text="Train ▶︎")
 
         self.__ax.set_xlim(self.__grid_xx.min(), self.__grid_xx.max())
         self.__ax.set_ylim(self.__grid_yy.min(), self.__grid_yy.max())
