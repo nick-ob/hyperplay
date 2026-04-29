@@ -23,10 +23,11 @@ from src.loading import load_data
 from src.types import TrainingSnapshot
 
 class GUI(ctk.CTk):
-    """A class representing the GUI.
+    """Main application window.
 
-    Attributes:
-        __network: The neural network used for training, etc.
+    Owns the GUI layout, training thread lifecycle, and all user-facing state.
+    Hyperparameter edits are staged on the left and only applied when the
+    Apply button is pressed.
     """
     def __init__(self) -> None:
         """Initialises instances of the GUI class.
@@ -37,7 +38,7 @@ class GUI(ctk.CTk):
         self.__hidden_layers: list[int] = [10, 10]
         self.__network: Network = Network(2, *self.__hidden_layers, 2)
 
-        # load default data and create decision grid
+        # data and decision grid
         self.__data_name: str = "circles.csv"
         self.__x_train, self.__y_train = load_data(self.__data_name)
         self.__grid_xx, self.__grid_yy, self.__grid_xy = self.__create_decision_grid(
@@ -48,19 +49,20 @@ class GUI(ctk.CTk):
         self.__training_thread: threading.Thread | None = None
         self.__stop_event = threading.Event()
 
-        # training settings
+        # training settings (applied)
         self.__learning_rate: float = 0.01
         self.__epochs: int = 100
         self.__batch_size: int | None = 32
         self.__snapshot_interval: int = 5
 
+        # training settings (staged)
         self.__pending_learning_rate: float = self.__learning_rate
         self.__pending_epochs: int = self.__epochs
         self.__pending_batch_size: int | None = self.__batch_size
 
         self.__loss = CCE()
 
-        # initialise widget layout and the animation plot
+        # initialise layout and plot
         self.__setup_layout()
         self.__setup_matplotlib()
 
@@ -69,12 +71,16 @@ class GUI(ctk.CTk):
 
     def __setup_layout(self) -> None:
         """Create and lay out GUI widgets.
+
+        Layout outline:
+            - Left: datasets, architecture, hyperparameters, apply button
+            - Right: control row, plot, progress + metrics
         """
         # create main container
         self.__root_frame = ctk.CTkFrame(self)
         self.__root_frame.pack(fill="both", expand=True)
 
-        # split layout into left/right panels
+        # left/right layout split
         self.__left_panel = ctk.CTkFrame(self.__root_frame, width=260)
         self.__left_panel.pack(side="left", fill="y", padx=12, pady=12)
 
@@ -99,7 +105,7 @@ class GUI(ctk.CTk):
         )
         self.__reset_button.pack(side="right")
 
-        # create plot area
+        # plot area
         self.__plot_frame = ctk.CTkFrame(self.__right_panel)
         self.__plot_frame.pack(fill="both", expand=True, padx=12, pady=12)
 
@@ -315,8 +321,8 @@ class GUI(ctk.CTk):
     def __start_training(self) -> None:
         """Start the background training thread and the render loop.
 
-        This disables the start button, clears any previous stop signal,
-        and launches the training worker.
+        Disables Train/Apply, clears any previous stop signal, and launches the
+        training worker. Training always uses the last applied settings.
         """
         # prevent duplicate training threads
         if self.__training_thread is not None and self.__training_thread.is_alive():
@@ -496,7 +502,7 @@ class GUI(ctk.CTk):
         """Update progress bars & training statistics.
 
         Args:
-            snpashot: The current snapshot of which metrics should be shown.
+            snapshot: The current snapshot of which metrics should be shown.
         """
         epoch_progress = 0.0
         if snapshot.total_epochs > 0:
@@ -527,6 +533,9 @@ class GUI(ctk.CTk):
 
     def __apply_settings(self) -> None:
         """Apply user defined settings for the network.
+
+        This is the only place where staged UI edits become active training
+        settings (dataset, architecture, hyperparameters).
         """
         if self.__training_thread is not None and self.__training_thread.is_alive():
             return
