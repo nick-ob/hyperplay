@@ -489,6 +489,9 @@ class GUI(ctk.CTk):
             should_stop=should_stop,
         )
 
+        if stop_event.is_set():
+            return
+
         # re-enable start button when training is done
         self.__train_button.configure(state="normal")
         self.__apply_button.configure(state="normal")
