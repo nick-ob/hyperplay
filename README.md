@@ -56,7 +56,7 @@ python main.py
 ## Datasets
 
 Datasets live in `data/` as CSV files. Each file contains columns for the input
-features and a `y` label column.
+features labeled as `x1` and `x2` as well as one `y` label column.
 
 Included datasets:
 
